@@ -46,7 +46,7 @@ Section Def.
     match t with
     | empty =>
       match lb,ub with
-      | Some lbs, Some ubs => lbs <= ubs
+      | Some lbs, Some ubs => lbs < ubs
       | _, _ => true
       end
     | node2 t0 (k0,v0) t1 =>
@@ -218,5 +218,44 @@ Section Def.
               /and5P[/eqP-> /eqP<- -> -> /Ht2A/and3P[/eqP<- -> ->]] ->.
           by rewrite maxn_eq eq_refl eq_refl eq_refl.
         - by move=> /= [-> _] Ht2 /and5P[-> -> -> -> /Ht2->].
+  Qed.
+  Lemma tree_append_preserves_order_validity(t:tree)
+      (k:TK) (v:TV) (lb ub:option TK):
+      (if lb is Some lbs then lbs < k else true) ->
+      (if ub is Some ubs then k < ubs else true) ->
+      tree_check_ordered t lb ub -> tree_check_ordered (tree_append k v t).2 lb ub.
+  Proof.
+    elim: t lb ub => [|t0 Ht0 [k0 v0] t1 Ht1
+                |t0 Ht0 [k0 v0] t1 Ht1 [k1 v1] t2 Ht2] /=.
+    - by move=> lb ub -> -> _.
+    - case: (compare3P TK k k0) => Hk.
+      - case: (tree_append k v t0) Ht0
+            => [[|] [|s0 [sk0 sv0] s1|s [sk0 sv0] s1 [sk1 sv1] s2]]
+               /= Ht0A lb ub Hlb Hub /andP[Ht0B ->];
+          try by rewrite (Ht0A lb (Some k0) Hlb Hk Ht0B).
+        by rewrite Bool.andb_true_r Ht0A.
+      - by move: Hk => /eqP<-.
+      - by case: (tree_append k v t1) Ht1
+               => [[|] [|s0 [sk0 sv0] s1|s [sk0 sv0] s1 [sk1 sv1] s2]]
+                  /= Ht1A lb ub Hlb Hub /andP[-> Ht1B];
+           rewrite (Ht1A _ _ _ Hub Ht1B).
+    - case: (compare3P TK k k0) => Hk0;
+          [| |case: (compare3P TK k k1) => Hk1].
+      - by case: (tree_append k v t0) Ht0
+               => [[|] [|s0 se0 s1|s se0 s1 se1 s2]]
+                  /= Ht0A lb ub Hlb Hub /and3P[Ht0B -> ->];
+           rewrite (Ht0A _ _ Hlb _ Ht0B).
+      - by move: Hk0 => /eqP<-.
+      - case: (tree_append k v t1) Ht1
+            => [[|] [|s0 [sk0 sv0] s1|s [sk0 sv0] s1 [sk1 sv1] s2]]
+                     /= Ht1A lb ub Hlb Hub /and3P[-> Ht1B ->];
+          try by move: (Ht1A (Some k0) (Some k1) Hk0 Hk1 Ht1B)=> /andP [-> ->].
+        - by rewrite (lt_trans _ _ _ _ Hk0 Hk1).
+        - by rewrite (lt_trans _ _ _ _ Hk0 Hk1).
+      - by move: Hk1 => /eqP<-.
+      - by case: (tree_append k v t2) Ht2
+               => [[|] [|s0 se0 s1|s se0 s1 se1 s2]]
+                  /= Ht2A lb ub Hlb Hub /and3P[-> -> Ht2B];
+           rewrite (Ht2A _ _ _ Hub Ht2B).
   Qed.
 End Def.

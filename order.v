@@ -130,6 +130,16 @@ Proof.
     by rewrite le_refl.
 Qed.
 
+Lemma lt_trans(T : partialOrderType) : transitive (@lt_op T).
+Proof.
+  move=> y x z /andP[le_xy neq_xy] /andP[le_yz neq_yz].
+  unfold lt_op.
+  rewrite (le_trans T _ _ _ le_xy le_yz).
+  case eq_xz: (x == z); last done.
+  move: eq_xz (conj le_xy le_yz) neq_xy => /eqP <- /andP/le_antisym<-.
+  by rewrite eq_refl.
+Qed.
+
 
 Module TotalOrder.
   Record mixin_of (T : Type) (op : rel T) : Type := Mixin {
