@@ -258,4 +258,17 @@ Section Def.
                   /= Ht2A lb ub Hlb Hub /and3P[-> -> Ht2B];
            rewrite (Ht2A _ _ _ Hub Ht2B).
   Qed.
+
+  Lemma tree_append_preserves_validity(t:tree) (k:TK) (v:TV):
+      tree_valid t -> tree_valid (tree_append k v t).2.
+  Proof.
+    move=> /andP[valid_order valid_depth].
+    by rewrite /tree_valid
+        (tree_append_preserves_order_validity t k v None None isT isT valid_order)
+        (tree_append_preserves_depth_validity t k v valid_depth).
+  Qed.
+
+  Definition append(t:T23) (k:TK) (v:TV):T23 :=
+      exist _ (tree_append k v (proj1_sig t)).2
+      (tree_append_preserves_validity (proj1_sig t) k v (proj2_sig t)).
 End Def.
